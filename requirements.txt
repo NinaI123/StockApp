@@ -1,0 +1,15 @@
+Flask
+yfinance
+pandas
+requests
+vaderSentiment
+plotly
+xgboost
+scikit-learn
+tensorflow
+gunicorn
+fastapi
+uvicorn
+pydantic
+python-multipart
+jinja2
