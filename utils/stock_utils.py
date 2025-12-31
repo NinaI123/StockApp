@@ -30,7 +30,7 @@ def get_stock_summary(ticker, history_data):
     }
 
 def fetch_historical_data(symbol, period='1y'):
-    """Fetch historical data with proper formatting"""
+    """Fetch historical data with proper formatting. """
     stock = yf.Ticker(symbol)
     hist = stock.history(period=period)
     

@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 class FeatureEngineer:
     """
-    Comprehensive feature engineering for stock data.
+    Comprehensive feature engineering for stock data..
     """
     
     @staticmethod

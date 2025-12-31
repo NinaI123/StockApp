@@ -1,15 +1,15 @@
-Flask
-yfinance
-pandas
-requests
-vaderSentiment
-plotly
-xgboost
-scikit-learn
-tensorflow
-gunicorn
-fastapi
-uvicorn
-pydantic
-python-multipart
-jinja2
+Flask # web framework
+yfinance # stock data downloader
+pandas # data manipulation
+requests # HTTP requests
+vaderSentiment # sentiment analysis
+plotly # data visualization
+xgboost # machine learning
+scikit-learn # machine learning
+tensorflow # machine learning
+gunicorn # web server
+fastapi # web framework
+uvicorn # web server
+pydantic # data validation
+python-multipart # file upload
+jinja2 # templating

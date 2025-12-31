@@ -3,7 +3,7 @@ from datetime import datetime
 def get_recommendations(df):
     # Ensure it returns a consistent format
     try:
-        # recommendation logic
+        # recommendation logic for the stock
         processed_recommendations = []
         
         return {

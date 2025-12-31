@@ -39,7 +39,7 @@ def analyze_articles(news_data):
         description = article.get("description", "") or ""
         content = article.get("content", "") or ""
         
-        # Combine title and description for better analysis
+        # Combine title and description for better analysis of the article
         full_text = f"{title}. {description}"
         sentiment = analyze_sentiment(full_text)
         

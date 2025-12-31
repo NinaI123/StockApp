@@ -5,7 +5,7 @@ NEWS_API_KEY = "34d22fcdceaf4990879b7a5600a3eba1"
 
 def fetch_news(query, page_size=10):
     """Fetch news articles for a given stock symbol"""
-    # Get news - do 30 if you want to get news from the last month
+    # Get news - do 30 if we want to get news from the last month
     from_date = (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d')
     
     url = f"https://newsapi.org/v2/everything?q={query}&apiKey={NEWS_API_KEY}" \
@@ -16,7 +16,7 @@ def fetch_news(query, page_size=10):
         response.raise_for_status()
         articles = response.json().get("articles", [])
         
-        # Filter out articles without content
+        # Filter out articles without content..
         filtered_articles = [article for article in articles if article.get("title") and article.get("url")]
         
         return {

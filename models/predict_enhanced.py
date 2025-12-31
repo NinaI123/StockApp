@@ -218,7 +218,7 @@ class EnhancedPredictor:
         macd_signal_val = df['MACD_Signal'].iloc[-1]
         macd_status = "bullish" if macd_val > macd_signal_val else "bearish"
         
-        # Simple Support/Resistance (20-day Low/High)
+        # Simple Support/Resistance (for example we are using 20-day Low/High)
         support_level = df['Low'].tail(20).min()
         resistance_level = df['High'].tail(20).max()
         

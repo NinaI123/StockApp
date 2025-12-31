@@ -211,7 +211,8 @@ def train_enhanced_pipeline(symbol="AAPL"):
     
     logger.info("Training complete. Artifacts saved.")
     
-    # Verification
+    # Verification - CLassification Report
+    
     y_pred = xgb_trend.predict(X_val_tab)
     print("\n--- XGBoost Trend Validation Report ---")
     print(classification_report(y_trend[split_idx:], y_pred))

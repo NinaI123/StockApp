@@ -4,7 +4,7 @@ def init_database():
     conn = sqlite3.connect('data/portfolio.db')
     cursor = conn.cursor()
     
-    # Create trades table
+    # Create trade table
     cursor.execute('''
     CREATE TABLE IF NOT EXISTS trades (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
