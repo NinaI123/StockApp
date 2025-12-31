@@ -14,7 +14,7 @@ class FeatureEngineer:
     @staticmethod
     def add_technical_indicators(df):
         """
-        Add technical indicators: RSI, MACD, Bollinger Bands, ATR, OBV, MAs, Patterns.
+        Adding technical indicators: RSI, MACD, Bollinger Bands, ATR, OBV, MAs, Patterns.
         """
         df = df.copy()
         

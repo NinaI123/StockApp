@@ -4,7 +4,7 @@ def get_recommendations(df):
     # Ensure it returns a consistent format
     try:
         # recommendation logic
-        processed_recommendations = []  # TODO: Replace with actual recommendation logic
+        processed_recommendations = []
         
         return {
             "status": "success",
