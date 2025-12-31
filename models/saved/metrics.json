@@ -1,0 +1,20 @@
+{
+    "last_updated": "2025-12-26T15:30:00",
+    "data_period": "2022-2025",
+    "models": {
+        "trend_classifier": {
+            "accuracy": 0.38,
+            "precision_up": 0.59,
+            "recall_up": 0.20,
+            "f1_score_macro": 0.36,
+            "description": "XGBoost + LSTM Ensemble predicting 5-day trend (Up/Down/Sideways)"
+        },
+        "sentiment_classifier": {
+            "accuracy": 0.42,
+            "precision_buy": 0.65,
+            "recall_buy": 0.30,
+            "f1_score_macro": 0.40,
+            "description": "XGBoost + LSTM Ensemble predicting price reaction to news"
+        }
+    }
+}

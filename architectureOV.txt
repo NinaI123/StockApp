@@ -1,0 +1,62 @@
+Stock App Architecture Overview
+System Overview
+The Stock App is a Flask-based web application that provides stock market data, news sentiment analysis, and machine learning-based price predictions. It allows users to track a portfolio of trades and a watchlist.
+
+Architecture Guidelines
+Backend (
+app.py
+)
+Framework: Flask (Python)
+Role: Serves as the central controller, handling HTTP requests, routing, and API responses.
+Key Routes:
+/: Serves the main SPA (Single Page Application) interface.
+/api/stock/*: Endpoints for current stock summary, historical data, and price predictions.
+/api/news: Fetches and analyzes news sentiment.
+/api/portfolio/*: Manages user trades and watchlist items using SQLite.
+/api/recommend: Generates stock recommendations from uploaded CSV files.
+Data Persistence
+Database: SQLite (
+data/portfolio.db
+)
+Schema:
+trades
+: Stores user trade history (symbol, quantity, price, notes).
+watchlist
+: Stores tracked stock symbols.
+Access Pattern: Direct SQL execution using sqlite3 within Flask routes.
+External Integrations
+yfinance: Used to fetch real-time and historical stock data from Yahoo Finance.
+News API: Fetches relevant news articles for stocks (via utils.news_api).
+Machine Learning Component
+Model: Long Short-Term Memory (LSTM) Neural Network (
+models/lstm_model.py
+).
+Framework: Keras / TensorFlow.
+Functionality:
+Prediction: Predicts stock close prices for the next N days (default 30).
+Data Pipeline: Fetches 1 year of historical data, scales it using MinMaxScaler, and feeds it into the model.
+Files:
+models/saved/lstm_model.h5
+: The pre-trained model file.
+models/saved/scaler.save
+: The scaler object for data normalization.
+Utilities
+utils/stock_utils.py
+: Helpers for formatting stock data and calculating change percentages.
+utils/sentiment.py
+: Analyzes sentiment of fetched news articles.
+utils/recommendations.py
+: Logic for generating recommendations based on portfolio data.
+Directory Structure
+stockapp/
+├── app.py                 # Main application entry point
+├── data/                  # Data storage (DB, logs)
+├── models/                # ML models and prediction logic
+│   ├── lstm_model.py      # Prediction logic
+│   └── saved/             # Serialized model and scaler
+├── utils/                 # Helper modules
+│   ├── news_api.py        # News fetching
+│   ├── sentiment.py       # Sentiment analysis
+│   └── stock_utils.py     # Data formatting
+├── templates/             # HTML templates (Jinja2)
+└── static/                # Static assets (CSS, JS)

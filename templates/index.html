@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Stock Analyzer</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    body {
+      background-color: #f4f6f9;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+    }
+
+    .bg-gradient-primary {
+      background: linear-gradient(45deg, #4e73df, #224abe);
+      color: white;
+    }
+
+    .signal-buy {
+      color: #1cc88a;
+      font-weight: bold;
+    }
+
+    .signal-sell {
+      color: #e74a3b;
+      font-weight: bold;
+    }
+
+    .signal-hold {
+      color: #f6c23e;
+      font-weight: bold;
+    }
+
+    .metric-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .metric-label {
+      font-size: 0.85rem;
+      color: #858796;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    #loading {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container">
+      <a class="navbar-brand" href="#"><i class="fas fa-robot me-2"></i>AI Stock Analyzer</a>
+      <span class="text-white-50" id="last-updated"></span>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- Search Section -->
+    <div class="row justify-content-center mb-4">
+      <div class="col-md-6">
+        <div class="input-group input-group-lg">
+          <input type="text" id="symbolInput" class="form-control" placeholder="Enter Stock Symbol (e.g. AAPL)"
+            value="AAPL">
+          <button class="btn btn-primary" type="button" onclick="analyzeStock()">Analyze</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading Spinner -->
+    <div id="loading" class="text-center py-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-2 text-muted"> crunching numbers...</p>
+    </div>
+
+    <!-- Error Alert -->
+    <div id="errorAlert" class="alert alert-danger d-none" role="alert"></div>
+
+    <!-- Main Dashboard -->
+    <div id="dashboard" class="d-none">
+
+      <!-- Header Info -->
+      <div class="row mb-4">
+        <div class="col-12 text-center">
+          <h2 id="stockTitle" class="fw-bold display-6"></h2>
+          <h4 id="stockPrice" class="text-primary"></h4>
+        </div>
+      </div>
+
+      <!-- Top Signals -->
+      <div class="row mb-4">
+        <div class="col-md-4">
+          <div class="card h-100 border-left-primary">
+            <div class="card-body text-center">
+              <div class="metric-label">Combined Signal</div>
+              <div id="combinedSignal" class="metric-value mt-2">--</div>
+              <div id="confidence" class="small text-muted mt-1">Confidence: --%</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-body text-center">
+              <div class="metric-label">AI Sentiment</div>
+              <div id="sentimentSignal" class="metric-value mt-2">--</div>
+              <div id="sentimentScore" class="small text-muted mt-1">Score: --</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-body text-center">
+              <div class="metric-label">Trend Forecast</div>
+              <div id="trendSignal" class="metric-value mt-2">--</div>
+              <div class="small text-muted mt-1">Next 5 Days</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Details Grid -->
+      <div class="row mb-4">
+        <!-- Technicals -->
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-header bg-white fw-bold">Technical Analysis</div>
+            <div class="card-body">
+              <table class="table table-borderless table-sm">
+                <tr>
+                  <td>RSI (14)</td>
+                  <td id="rsiValue" class="text-end fw-bold">--</td>
+                </tr>
+                <tr>
+                  <td>MACD Status</td>
+                  <td id="macdStatus" class="text-end fw-bold">--</td>
+                </tr>
+                <tr>
+                  <td>Support (20d)</td>
+                  <td id="supportLevel" class="text-end fw-bold">--</td>
+                </tr>
+                <tr>
+                  <td>Resistance (20d)</td>
+                  <td id="resistanceLevel" class="text-end fw-bold">--</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Risk Metrics -->
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-header bg-white fw-bold">Risk Assessment</div>
+            <div class="card-body">
+              <table class="table table-borderless table-sm">
+                <tr>
+                  <td>Market Regime</td>
+                  <td id="marketRegime" class="text-end fw-bold">--</td>
+                </tr>
+                <tr>
+                  <td>Volatility (ATR)</td>
+                  <td id="volatilityAtr" class="text-end fw-bold">--</td>
+                </tr>
+                <tr>
+                  <td>Position Size</td>
+                  <td id="positionSize" class="text-end fw-bold">--</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div> <!-- End Dashboard -->
+
+    <!-- Developer Tools Section -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card">
+          <div class="card-header bg-dark text-white fw-bold">
+            <i class="fas fa-terminal me-2"></i>Developer API Tools
+          </div>
+          <div class="card-body">
+            <p class="small text-muted mb-3">Directly access API routes. Results will be shown below.</p>
+
+            <div class="btn-group d-flex flex-wrap gap-2" role="group">
+              <button class="btn btn-outline-primary" onclick="callApi('/api/stock/historical?symbol=' + getSymbol())">
+                <i class="fas fa-history me-1"></i> Historical Data
+              </button>
+              <button class="btn btn-outline-info" onclick="callApi('/api/stock/summary?symbol=' + getSymbol())">
+                <i class="fas fa-info-circle me-1"></i> Stock Summary
+              </button>
+              <button class="btn btn-outline-success" onclick="callApi('/api/stock/analysis?symbol=' + getSymbol())">
+                <i class="fas fa-magic me-1"></i> Full Analysis
+              </button>
+              <button class="btn btn-outline-danger" onclick="callBacktest()">
+                <i class="fas fa-chess-knight me-1"></i> Run Backtest (POST)
+              </button>
+              <button class="btn btn-outline-secondary" onclick="callApi('/api/model/performance')">
+                <i class="fas fa-tachometer-alt me-1"></i> Model Perf.
+              </button>
+            </div>
+
+            <!-- Output Console -->
+            <div class="mt-4">
+              <h6>API Response:</h6>
+              <pre id="apiOutput" class="bg-light p-3 border rounded"
+                style="max-height: 400px; overflow: auto; font-size: 0.85rem;">// Click a button above to see response...</pre>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Utils
+    const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+    const formatPercent = (val) => (val * 100).toFixed(1) + '%';
+
+    // API Calls
+    async function analyzeStock() {
+      const symbol = document.getElementById('symbolInput').value.toUpperCase();
+      if (!symbol) return;
+
+      // UI Reset
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('dashboard').classList.add('d-none');
+      document.getElementById('errorAlert').classList.add('d-none');
+
+      try {
+        const res = await fetch(`/api/stock/analysis?symbol=${symbol}`);
+        const data = await res.json();
+
+        if (data.error) throw new Error(data.error);
+
+        // Populate Data
+        document.getElementById('stockTitle').textContent = data.symbol;
+        document.getElementById('stockPrice').textContent = formatCurrency(data.current_price);
+
+        // Signals
+        updateSignal('combinedSignal', data.trading_signals?.combined_signal || '--');
+        document.getElementById('confidence').textContent = `Confidence: ${data.trading_signals?.confidence ? formatPercent(data.trading_signals.confidence) : '--'}`;
+
+        updateSignal('sentimentSignal', data.trading_signals?.sentiment_signal || '--');
+        const sentScore = data.sentiment_score !== undefined ? data.sentiment_score.toFixed(2) : '--';
+        document.getElementById('sentimentScore').textContent = `Score: ${sentScore}`;
+
+        updateSignal('trendSignal', data.trading_signals?.trend_signal || '--');
+
+        // Technicals
+        document.getElementById('rsiValue').textContent = data.technical_analysis?.rsi ? data.technical_analysis.rsi.toFixed(2) : '--';
+        document.getElementById('macdStatus').textContent = (data.technical_analysis?.macd || '--').toUpperCase();
+        document.getElementById('supportLevel').textContent = data.technical_analysis?.support_level ? formatCurrency(data.technical_analysis.support_level) : '--';
+        document.getElementById('resistanceLevel').textContent = data.technical_analysis?.resistance_level ? formatCurrency(data.technical_analysis.resistance_level) : '--';
+
+        // Risk
+        document.getElementById('marketRegime').textContent = data.risk_assessment?.market_regime || '--';
+        document.getElementById('volatilityAtr').textContent = data.risk_metrics?.volatility_atr ? data.risk_metrics.volatility_atr.toFixed(2) : (data.risk_assessment?.volatility || '--');
+        document.getElementById('positionSize').textContent = data.risk_assessment.recommended_position_size.toUpperCase();
+
+        // Show
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('dashboard').classList.remove('d-none');
+
+      } catch (err) {
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('errorAlert').textContent = `Error: ${err.message}`;
+        document.getElementById('errorAlert').classList.remove('d-none');
+      }
+    }
+
+    function updateSignal(elementId, signal) {
+      const el = document.getElementById(elementId);
+      el.textContent = signal;
+      el.className = 'metric-value mt-2'; // Reset
+
+      if (signal.includes('BUY') || signal === 'UP') el.classList.add('signal-buy');
+      else if (signal.includes('SELL') || signal === 'DOWN') el.classList.add('signal-sell');
+      else el.classList.add('signal-hold');
+    }
+
+    async function loadExtras() {
+      // Daily Insights
+      try {
+        const res = await fetch('/api/insights/daily');
+        const data = await res.json();
+        if (data.status !== 'maintenance' && data.status !== 'unavailable') {
+          document.getElementById('dailyInsights').innerHTML = `
+                    <p class="lead">${data.summary}</p>
+                    <small class="text-muted">Market Trend: ${data.trend}</small>
+                `;
+        } else {
+          document.getElementById('dailyInsights').innerHTML = '<p class="text-warning">Insights temporarily unavailable.</p>';
+        }
+      } catch (e) { console.error(e); }
+
+      // Model Performance
+      try {
+        const res = await fetch('/api/model/performance');
+        const data = await res.json();
+        if (!data.error) {
+          const trend = data.models.trend_classifier;
+          const sent = data.models.sentiment_classifier;
+          document.getElementById('modelMetrics').innerHTML = `
+                    <div class="mb-2"><strong>Trend Accuracy:</strong> ${formatPercent(trend.accuracy)}</div>
+                    <div><strong>Sentiment Accuracy:</strong> ${formatPercent(sent.accuracy)}</div>
+                    <small class="text-muted mt-2 d-block">Updated: ${data.last_updated.split('T')[0]}</small>
+                `;
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    // Init
+    loadExtras();
+
+    // -- Developer Tools Functions --
+
+    function getSymbol() {
+      return document.getElementById('symbolInput').value.toUpperCase() || 'AAPL';
+    }
+
+    async function callApi(url) {
+      const output = document.getElementById('apiOutput');
+      output.textContent = "Fetching data...";
+      output.parentElement.scrollIntoView({ behavior: 'smooth' });
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        output.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        output.textContent = "Error: " + err.message;
+      }
+    }
+
+    async function callBacktest() {
+      const output = document.getElementById('apiOutput');
+      output.textContent = "Running backtest simulation...";
+      output.parentElement.scrollIntoView({ behavior: 'smooth' });
+
+      const symbol = getSymbol();
+      try {
+        const res = await fetch('/api/backtest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ symbol: symbol, strategy: 'momentum' })
+        });
+        const data = await res.json();
+        output.textContent = JSON.stringify(data, null, 2);
+      } catch (err) {
+        output.textContent = "Error: " + err.message;
+      }
+    }
+  </script>
+
+</body>
+
+</html>
