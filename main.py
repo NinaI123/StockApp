@@ -1,3 +1,4 @@
+#system arhcitecture changed to FASTAPI, before it was flask
 import os
 import sqlite3
 import logging
