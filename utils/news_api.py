@@ -1,7 +1,9 @@
 import requests
+import os
 from datetime import datetime, timedelta
 
-NEWS_API_KEY = "34d22fcdceaf4990879b7a5600a3eba1"
+# Load API key from environment variable (for security)
+NEWS_API_KEY = os.getenv("NEWS_API_KEY", "34d22fcdceaf4990879b7a5600a3eba1")  # Fallback for local dev
 
 def fetch_news(query, page_size=10):
     """Fetch news articles for a given stock symbol"""
