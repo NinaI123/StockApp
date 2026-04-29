@@ -96,66 +96,12 @@ class BacktestRequest(BaseModel):
     period: str = "1y"
     strategy: str = "trend_following"
 
-class LeagueCreate(BaseModel):
-    name: str
-    is_public: bool = True
-    max_teams: int = 8
-    season_weeks: int = 2
-
-class TeamCreate(BaseModel):
-    league_code: str
-    player_name: str
-    team_name: str
-    stocks: List[str]
-
-class MatchupCreate(BaseModel):
-    league_id: int
-    team1_id: int
-    team2_id: int
-
-class MessageCreate(BaseModel):
-    league_id: int
-    player_name: str
-    message: str
-
-class DraftPick(BaseModel):
-    league_id: int
-    team_id: int
-    symbol: str
-    pick_round: int
-
 class PredictionCreate(BaseModel):
     symbol: str
     target_price: float
     resolution_date: str  # ISO date string YYYY-MM-DD
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
-def _current_week() -> tuple:
-    today = date.today()
-    monday = today - timedelta(days=today.weekday())
-    friday = monday + timedelta(days=4)
-    return monday.isoformat(), friday.isoformat()
 
-def _gen_code(db, table: str) -> str:
-    for _ in range(30):
-        code = str(random.randint(100000, 999999))
-        cur = db.cursor()
-        cur.execute(f"SELECT id FROM {table} WHERE code = %s", (code,))
-        if not cur.fetchone():
-            return code
-    raise HTTPException(status_code=500, detail="Could not generate unique code.")
-
-def _compute_streak(match_results: list) -> str:
-    if not match_results:
-        return "-"
-    last = match_results[-1]
-    count = 0
-    for r in reversed(match_results):
-        if r == last:
-            count += 1
-        else:
-            break
-    return f"🔥{count}W" if last else f"{count}L"
 
 # ── Routes ────────────────────────────────────────────────────────────────────
 
@@ -373,9 +319,9 @@ async def remove_from_watchlist(item: WatchlistAdd, db=Depends(get_db), user=Dep
     return {"status": "success"}
 
 
-# ════════════════════════════════════════════════════════════════════
-# ⚔️  PORTFOLIO WARS  ──  /api/wars/*
-# ════════════════════════════════════════════════════════════════════
+
+
+
 
 @app.post("/api/wars/league", status_code=201)
 async def create_league(body: LeagueCreate, db=Depends(get_db)):
@@ -738,24 +684,6 @@ async def get_user_profile(user_id: int, db=Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="User not found.")
 
-    # Compute W/L stats across all leagues
-    cur.execute(
-        "SELECT COUNT(*) AS total FROM pw_results r "
-        "JOIN pw_matchups m ON r.matchup_id = m.id "
-        "JOIN pw_teams t ON (m.team1_id = t.id OR m.team2_id = t.id) "
-        "WHERE t.user_id = %s",
-        (user_id,)
-    )
-    total_matchups = cur.fetchone()["total"]
-
-    cur.execute(
-        "SELECT COUNT(*) AS wins FROM pw_results r "
-        "JOIN pw_teams t ON r.winner_id = t.id "
-        "WHERE t.user_id = %s",
-        (user_id,)
-    )
-    wins = cur.fetchone()["wins"]
-
     # Predictions accuracy
     cur.execute("SELECT COUNT(*) AS total FROM predictions WHERE user_id = %s", (user_id,))
     total_preds = cur.fetchone()["total"]
@@ -775,10 +703,6 @@ async def get_user_profile(user_id: int, db=Depends(get_db)):
         "is_pro": user["is_pro"],
         "member_since": str(user["created_at"]),
         "stats": {
-            "total_matchups": total_matchups,
-            "wins": wins,
-            "losses": total_matchups - wins,
-            "win_rate": f"{round(wins / total_matchups * 100)}%" if total_matchups else "N/A",
             "predictions_made": total_preds,
             "prediction_accuracy": f"{round(correct_preds / total_preds * 100)}%" if total_preds else "N/A",
         },
