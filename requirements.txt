@@ -13,3 +13,8 @@ uvicorn # web server
 pydantic # data validation
 python-multipart # file upload
 jinja2 # templating
+psycopg2-binary # postgresql driver
+python-jose[cryptography] # JWT tokens
+passlib[bcrypt] # password hashing
+python-dotenv # .env file loading
+APScheduler # scheduled jobs

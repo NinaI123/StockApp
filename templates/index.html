@@ -7,6 +7,11 @@
   <title>AI Stock Analyzer</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="/static/wars.css">
   <style>
     body {
       background-color: #f4f6f9;
@@ -60,15 +65,20 @@
       display: none;
     }
   </style>
-</head>
-
-<body>
-
-  <nav class="navbar navbar-dark bg-dark mb-4">
-    <div class="container">
-      <a class="navbar-brand" href="#"><i class="fas fa-robot me-2"></i>AI Stock Analyzer</a>
+  <div class="container">
+    <a class="navbar-brand" href="#">
+      <i class="fas fa-robot me-2"></i>AI Stock Analyzer
+    </a>
+    <div class="d-flex align-items-center gap-3">
       <span class="text-white-50" id="last-updated"></span>
+      <a class="nav-tab-wars" onclick="showSection('main')" id="tab-main">
+        <i class="fas fa-chart-line me-1"></i>Analyzer
+      </a>
+      <a class="nav-tab-wars wars-section-link" onclick="showSection('wars')" id="tab-wars">
+        &#x2694;&#xFE0F; Portfolio Wars
+      </a>
     </div>
+  </div>
   </nav>
 
   <div class="container">
@@ -229,150 +239,263 @@
       </div>
     </div>
 
-  </div>
+  </div><!-- /.container (main analyzer) -->
+
+  <!-- ============================================================
+       ⚔️  PORTFOLIO WARS  –  4-Screen SPA
+  ============================================================ -->
+  <div id="wars-section">
+    <div class="wars-bg">
+
+      <!-- ── SCREEN: HUB ─────────────────────────────────────── -->
+      <div id="wars-screen-hub" class="wars-screen active">
+        <div class="container">
+          <div class="text-center py-5">
+            <div class="wars-logo mb-1">⚔️ PORTFOLIO WARS</div>
+            <p class="wars-subtitle">Fantasy sports for stocks. Draft your army. Dominate your friends.</p>
+          </div>
+          <div class="row g-4 mb-5">
+            <div class="col-md-6">
+              <div class="w-card h-100 p-4 text-center">
+                <div style="font-size:3rem">🏆</div>
+                <h5 style="font-family:'Orbitron',sans-serif;color:#FFD700;margin:0.5rem 0">Create a League</h5>
+                <p style="color:#6b7280;font-size:0.88rem">Start a new league, get a shareable 6-digit code, invite your
+                  friends.</p>
+                <button class="w-btn w-btn-gold w-100" onclick="goToCreate('create')">Create League ⚔️</button>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="w-card h-100 p-4 text-center">
+                <div style="font-size:3rem">🔑</div>
+                <h5 style="font-family:'Orbitron',sans-serif;color:#a855f7;margin:0.5rem 0">Join a League</h5>
+                <p style="color:#6b7280;font-size:0.88rem">Got a league code? Enter it and draft your stock army.</p>
+                <button class="w-btn w-btn-purple w-100" onclick="goToCreate('join')">Join &amp; Draft 🚀</button>
+              </div>
+            </div>
+          </div>
+          <div class="w-card p-4" style="max-width:500px;margin:0 auto">
+            <div class="section-heading">📊 View a League</div>
+            <div class="d-flex gap-2">
+              <input id="pw-load-league-code" type="text" class="w-input flex-grow-1"
+                placeholder="Enter 6-digit league code…" maxlength="6"
+                onkeydown="if(event.key==='Enter')pwLoadLeagueByCode()">
+              <button class="w-btn w-btn-ghost" onclick="pwLoadLeagueByCode()">View →</button>
+            </div>
+            <div id="pw-load-status" class="pw-status"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SCREEN: CREATE / JOIN ──────────────────────────── -->
+      <div id="wars-screen-create" class="wars-screen">
+        <div class="container">
+          <div class="d-flex align-items-center gap-3 py-3 mb-2">
+            <button class="w-back" onclick="showWarsScreen('hub')">← Back</button>
+            <div class="wars-logo" style="font-size:1.4rem">⚔️ PORTFOLIO WARS</div>
+          </div>
+          <div id="create-mode-tabs" class="d-flex gap-2 mb-4">
+            <button id="tab-mode-create" class="w-btn w-btn-gold w-btn-sm mode-tab"
+              onclick="showCreateMode('create')">🏆 Create League</button>
+            <button id="tab-mode-join" class="w-btn w-btn-purple w-btn-sm mode-tab" onclick="showCreateMode('join')">🔑
+              Join League</button>
+          </div>
+          <div class="row g-4">
+            <div class="col-lg-5">
+              <!-- Create panel -->
+              <div id="create-panel" class="w-card p-4 mb-4">
+                <div class="section-heading">Step 1: Name Your League</div>
+                <div id="pw-create-form">
+                  <input id="pw-league-name" type="text" class="w-input mb-3" placeholder="e.g. Nina's Wall Street Gang"
+                    onkeydown="if(event.key==='Enter')pwCreateLeague()">
+                  <button class="w-btn w-btn-gold w-100" onclick="pwCreateLeague()">
+                    <i class="fas fa-plus-circle me-1"></i> Create League
+                  </button>
+                  <div id="pw-create-status" class="pw-status"></div>
+                </div>
+                <div id="pw-create-success" style="display:none">
+                  <p style="color:#4ade80;font-size:0.9rem">✅ League created!</p>
+                  <div class="mb-2" style="color:#9ca3af;font-size:0.82rem">Share this code with friends:</div>
+                  <div class="d-flex align-items-center gap-2 mb-3">
+                    <span class="code-badge" id="pw-created-code">——</span>
+                    <button class="copy-btn" id="copy-code-btn" onclick="copyLeagueCode()" title="Copy"><i
+                        class="fas fa-copy"></i></button>
+                  </div>
+                  <div style="font-size:0.8rem;color:#6b7280" id="pw-created-name"></div>
+                  <button class="w-btn w-btn-purple w-100 mt-3" onclick="proceedToDraft()">Draft My Team →</button>
+                </div>
+              </div>
+              <!-- Join panel -->
+              <div id="join-panel" style="display:none" class="w-card p-4 mb-4">
+                <div class="section-heading">Step 1: Enter League Code</div>
+                <input id="pw-join-league-code" type="text" class="w-input mb-3" placeholder="6-digit code e.g. 582910"
+                  maxlength="6">
+                <div class="section-heading">Step 2: Your Info</div>
+                <input id="pw-player-name" type="text" class="w-input mb-2" placeholder="Your name e.g. BullishNina">
+                <input id="pw-team-name" type="text" class="w-input mb-3" placeholder="Squad name e.g. Bullish Brigade">
+              </div>
+              <!-- Draft panel -->
+              <div id="draft-panel" style="display:none" class="w-card p-4">
+                <div class="section-heading">Step 3: Lineup (<span id="lineup-count">0/5</span>)</div>
+                <div id="lineup-slots" class="d-flex flex-column gap-2 mb-3"></div>
+                <button id="draft-btn" class="w-btn w-btn-green w-100" onclick="pwJoinLeague()" disabled>
+                  ✅ Create My Army
+                </button>
+                <div id="pw-join-status" class="pw-status"></div>
+              </div>
+            </div>
+            <div class="col-lg-7">
+              <div class="w-card p-4">
+                <div class="section-heading">Pick 3–5 Stocks for Your Army</div>
+                <div class="row g-2 mb-3" id="stock-tile-grid"></div>
+                <div class="d-flex gap-2">
+                  <input id="custom-stock-input" type="text" class="w-input flex-grow-1"
+                    placeholder="Search any ticker e.g. COIN" onkeydown="if(event.key==='Enter')addCustomStock()"
+                    style="text-transform:uppercase">
+                  <button class="w-btn w-btn-ghost" onclick="addCustomStock()">+ Add</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SCREEN: LEAGUE VIEW ──────────────────────────────── -->
+      <div id="wars-screen-league" class="wars-screen">
+        <div class="container">
+          <div class="d-flex align-items-start justify-content-between py-3 mb-3">
+            <button class="w-back"
+              onclick="showWarsScreen('hub');clearInterval(PW.refreshTimer);clearInterval(PW.msgRefreshTimer)">←
+              Back</button>
+            <div class="text-end">
+              <div style="font-family:'Orbitron',sans-serif;font-size:1.1rem;color:#FFD700" id="lg-name">League</div>
+              <div style="font-size:0.78rem;color:#4b5563" id="lg-week"></div>
+              <div style="font-size:0.78rem;color:#4b5563" id="lg-team-count"></div>
+            </div>
+          </div>
+          <!-- Code bar -->
+          <div class="w-card p-3 mb-4 d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div>
+              <span style="font-size:0.75rem;color:#6b7280">LEAGUE CODE</span><br>
+              <span class="code-badge" id="lg-code">——</span>
+              <button class="copy-btn ms-1" id="lg-copy-btn"
+                onclick="copyToClipboard(document.getElementById('lg-code').textContent,'lg-copy-btn')">
+                <i class="fas fa-copy"></i>
+              </button>
+            </div>
+            <button class="w-btn w-btn-purple w-btn-sm" onclick="goToCreate('join')">+ Join This League</button>
+          </div>
+          <div class="row g-4">
+            <div class="col-lg-7">
+              <!-- Standings -->
+              <div class="w-card mb-4">
+                <div class="card-header">📊 Standings</div>
+                <div class="card-body p-0">
+                  <table class="w-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Team</th>
+                        <th>Stocks</th>
+                        <th>Record</th>
+                        <th>Streak</th>
+                      </tr>
+                    </thead>
+                    <tbody id="lg-standings-body">
+                      <tr>
+                        <td colspan="5" style="color:#4b5563;text-align:center;padding:1.5rem">Loading…</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <!-- Matchups -->
+              <div class="w-card mb-4">
+                <div class="card-header d-flex justify-content-between">
+                  <span>⚔️ Matchups</span>
+                  <button class="w-btn w-btn-ghost w-btn-sm" onclick="pwRefreshLeague()"><i
+                      class="fas fa-sync"></i></button>
+                </div>
+                <div class="card-body">
+                  <div id="lg-matchups">
+                    <p style="color:#4b5563;font-size:0.85rem">Loading…</p>
+                  </div>
+                </div>
+              </div>
+              <!-- Create matchup -->
+              <div class="w-card">
+                <div class="card-header">⚡ Schedule a Battle</div>
+                <div class="card-body">
+                  <input type="hidden" id="mu-league-id">
+                  <div class="row g-2 mb-3">
+                    <div class="col-6">
+                      <label style="font-size:0.75rem;color:#6b7280">Team 1</label>
+                      <select id="mu-team1-sel" class="w-input" style="padding:0.45rem 0.7rem">
+                        <option>Select…</option>
+                      </select>
+                    </div>
+                    <div class="col-6">
+                      <label style="font-size:0.75rem;color:#6b7280">Team 2</label>
+                      <select id="mu-team2-sel" class="w-input" style="padding:0.45rem 0.7rem">
+                        <option>Select…</option>
+                      </select>
+                    </div>
+                  </div>
+                  <button class="w-btn w-btn-gold w-100" onclick="pwCreateMatchup()">
+                    <i class="fas fa-bolt me-1"></i> Create Matchup
+                  </button>
+                  <div id="pw-mu-status" class="pw-status"></div>
+                </div>
+              </div>
+            </div>
+            <!-- Trash talk -->
+            <div class="col-lg-5">
+              <div class="w-card h-100">
+                <div class="card-header">💬 Trash Talk Arena</div>
+                <div class="card-body d-flex flex-column" style="gap:0.75rem">
+                  <div class="chat-feed" id="chat-feed">
+                    <p style="color:#4b5563;font-size:0.85rem;text-align:center;padding:1rem">Loading…</p>
+                  </div>
+                  <div>
+                    <input id="chat-name-input" type="text" class="w-input mb-2" placeholder="Your name"
+                      style="font-size:0.82rem">
+                    <div class="d-flex gap-2">
+                      <input id="chat-input" type="text" class="w-input flex-grow-1" placeholder="Write trash talk…"
+                        onkeydown="if(event.key==='Enter')pwPostMessage()">
+                      <button class="w-btn w-btn-purple" onclick="pwPostMessage()">📤</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SCREEN: MATCH (BATTLE) VIEW ──────────────────────── -->
+      <div id="wars-screen-match" class="wars-screen">
+        <div class="container">
+          <div class="d-flex align-items-center gap-3 py-3 mb-3">
+            <button class="w-back" onclick="showWarsScreen('league')">← Back to League</button>
+            <div style="font-family:'Orbitron',sans-serif;color:#FFD700;font-size:1rem">⚔️ BATTLE VIEW</div>
+          </div>
+          <input type="hidden" id="match-score-id">
+          <div id="match-content"></div>
+          <div class="text-center mt-3">
+            <button class="w-btn w-btn-gold mt-2" onclick="pwScoreMatchup()">
+              <i class="fas fa-calculator me-1"></i> Recalculate Scores
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /wars-bg -->
+  </div><!-- /wars-section -->
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Utils
-    const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
-    const formatPercent = (val) => (val * 100).toFixed(1) + '%';
-
-    // API Calls
-    async function analyzeStock() {
-      const symbol = document.getElementById('symbolInput').value.toUpperCase();
-      if (!symbol) return;
-
-      // UI Reset
-      document.getElementById('loading').style.display = 'block';
-      document.getElementById('dashboard').classList.add('d-none');
-      document.getElementById('errorAlert').classList.add('d-none');
-
-      try {
-        const res = await fetch(`/api/stock/analysis?symbol=${symbol}`);
-        const data = await res.json();
-
-        if (data.error) throw new Error(data.error);
-
-        // Populate Data
-        document.getElementById('stockTitle').textContent = data.symbol;
-        document.getElementById('stockPrice').textContent = formatCurrency(data.current_price);
-
-        // Signals
-        updateSignal('combinedSignal', data.trading_signals?.combined_signal || '--');
-        document.getElementById('confidence').textContent = `Confidence: ${data.trading_signals?.confidence ? formatPercent(data.trading_signals.confidence) : '--'}`;
-
-        updateSignal('sentimentSignal', data.trading_signals?.sentiment_signal || '--');
-        const sentScore = data.sentiment_score !== undefined ? data.sentiment_score.toFixed(2) : '--';
-        document.getElementById('sentimentScore').textContent = `Score: ${sentScore}`;
-
-        updateSignal('trendSignal', data.trading_signals?.trend_signal || '--');
-
-        // Technicals
-        document.getElementById('rsiValue').textContent = data.technical_analysis?.rsi ? data.technical_analysis.rsi.toFixed(2) : '--';
-        document.getElementById('macdStatus').textContent = (data.technical_analysis?.macd || '--').toUpperCase();
-        document.getElementById('supportLevel').textContent = data.technical_analysis?.support_level ? formatCurrency(data.technical_analysis.support_level) : '--';
-        document.getElementById('resistanceLevel').textContent = data.technical_analysis?.resistance_level ? formatCurrency(data.technical_analysis.resistance_level) : '--';
-
-        // Risk
-        document.getElementById('marketRegime').textContent = data.risk_assessment?.market_regime || '--';
-        document.getElementById('volatilityAtr').textContent = data.risk_metrics?.volatility_atr ? data.risk_metrics.volatility_atr.toFixed(2) : (data.risk_assessment?.volatility || '--');
-        document.getElementById('positionSize').textContent = data.risk_assessment.recommended_position_size.toUpperCase();
-
-        // Show
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('dashboard').classList.remove('d-none');
-
-      } catch (err) {
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('errorAlert').textContent = `Error: ${err.message}`;
-        document.getElementById('errorAlert').classList.remove('d-none');
-      }
-    }
-
-    function updateSignal(elementId, signal) {
-      const el = document.getElementById(elementId);
-      el.textContent = signal;
-      el.className = 'metric-value mt-2'; // Reset
-
-      if (signal.includes('BUY') || signal === 'UP') el.classList.add('signal-buy');
-      else if (signal.includes('SELL') || signal === 'DOWN') el.classList.add('signal-sell');
-      else el.classList.add('signal-hold');
-    }
-
-    async function loadExtras() {
-      // Daily Insights
-      try {
-        const res = await fetch('/api/insights/daily');
-        const data = await res.json();
-        if (data.status !== 'maintenance' && data.status !== 'unavailable') {
-          document.getElementById('dailyInsights').innerHTML = `
-                    <p class="lead">${data.summary}</p>
-                    <small class="text-muted">Market Trend: ${data.trend}</small>
-                `;
-        } else {
-          document.getElementById('dailyInsights').innerHTML = '<p class="text-warning">Insights temporarily unavailable.</p>';
-        }
-      } catch (e) { console.error(e); }
-
-      // Model Performance
-      try {
-        const res = await fetch('/api/model/performance');
-        const data = await res.json();
-        if (!data.error) {
-          const trend = data.models.trend_classifier;
-          const sent = data.models.sentiment_classifier;
-          document.getElementById('modelMetrics').innerHTML = `
-                    <div class="mb-2"><strong>Trend Accuracy:</strong> ${formatPercent(trend.accuracy)}</div>
-                    <div><strong>Sentiment Accuracy:</strong> ${formatPercent(sent.accuracy)}</div>
-                    <small class="text-muted mt-2 d-block">Updated: ${data.last_updated.split('T')[0]}</small>
-                `;
-        }
-      } catch (e) { console.error(e); }
-    }
-
-    // Init
-    loadExtras();
-
-    // -- Developer Tools Functions --
-
-    function getSymbol() {
-      return document.getElementById('symbolInput').value.toUpperCase() || 'AAPL';
-    }
-
-    async function callApi(url) {
-      const output = document.getElementById('apiOutput');
-      output.textContent = "Fetching data...";
-      output.parentElement.scrollIntoView({ behavior: 'smooth' });
-
-      try {
-        const res = await fetch(url);
-        const data = await res.json();
-        output.textContent = JSON.stringify(data, null, 2);
-      } catch (err) {
-        output.textContent = "Error: " + err.message;
-      }
-    }
-
-    async function callBacktest() {
-      const output = document.getElementById('apiOutput');
-      output.textContent = "Running backtest simulation...";
-      output.parentElement.scrollIntoView({ behavior: 'smooth' });
-
-      const symbol = getSymbol();
-      try {
-        const res = await fetch('/api/backtest', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ symbol: symbol, strategy: 'momentum' })
-        });
-        const data = await res.json();
-        output.textContent = JSON.stringify(data, null, 2);
-      } catch (err) {
-        output.textContent = "Error: " + err.message;
-      }
-    }
+    function getSymbol() { return document.getElementById('symbolInput').value.toUpperCase() || 'AAPL'; }
   </script>
-
-</body>
+  <script src="/static/wars.js"></script>
+  </body>
 
 </html>
