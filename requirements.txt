@@ -18,3 +18,4 @@ python-jose[cryptography] # JWT tokens
 passlib[bcrypt] # password hashing
 python-dotenv # .env file loading
 APScheduler # scheduled jobs
+redis # live anomaly feed

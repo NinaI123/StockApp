@@ -24,6 +24,9 @@ _SQLITE_PATH   = os.getenv("SQLITE_PATH", "local.db")
 
 _use_postgres = False
 
+# Public alias so other modules can branch on the active backend
+USE_POSTGRES: bool = _use_postgres
+
 if _FORCE_SQLITE or not _DATABASE_URL:
     logger.info("db: Using SQLite (%s)", _SQLITE_PATH)
 else:
@@ -32,6 +35,7 @@ else:
         import psycopg2
         from psycopg2.extras import RealDictCursor as _RealDictCursor
         _use_postgres = True
+        USE_POSTGRES = True
         logger.info("db: PostgreSQL mode — %s", _DATABASE_URL.split("@")[-1])
     except ImportError:
         logger.warning("db: psycopg2 not installed — falling back to SQLite")
@@ -97,7 +101,7 @@ def _sqlite_connection():
 # ═══════════════════════════════════════════════════════════════════════════
 def get_connection():
     """Return a DB connection (postgres or sqlite)."""
-    if _use_postgres:
+    if USE_POSTGRES:
         try:
             return _pg_connection()
         except Exception as e:
@@ -125,10 +129,10 @@ def init_db():
         cur = conn.cursor()
 
         # Helper: use SERIAL on Postgres, INTEGER PRIMARY KEY on SQLite
-        pk = "SERIAL PRIMARY KEY" if _use_postgres else "INTEGER PRIMARY KEY AUTOINCREMENT"
-        ts = "TIMESTAMP DEFAULT NOW()" if _use_postgres else "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-        bl = "BOOLEAN DEFAULT TRUE"  if _use_postgres else "INTEGER DEFAULT 1"
-        bf = "BOOLEAN DEFAULT FALSE" if _use_postgres else "INTEGER DEFAULT 0"
+        pk = "SERIAL PRIMARY KEY" if USE_POSTGRES else "INTEGER PRIMARY KEY AUTOINCREMENT"
+        ts = "TIMESTAMP DEFAULT NOW()" if USE_POSTGRES else "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+        bl = "BOOLEAN DEFAULT TRUE"  if USE_POSTGRES else "INTEGER DEFAULT 1"
+        bf = "BOOLEAN DEFAULT FALSE" if USE_POSTGRES else "INTEGER DEFAULT 0"
 
         cur.execute(f"""
         CREATE TABLE IF NOT EXISTS users (
@@ -158,7 +162,74 @@ def init_db():
             added_date {ts}
         )""")
 
+        cur.execute(f"""
+        CREATE TABLE IF NOT EXISTS ticker_regimes (
+            id            {pk},
+            ticker        TEXT NOT NULL,
+            as_of         TEXT NOT NULL,
+            regime        TEXT NOT NULL,
+            price         REAL,
+            vol_20d       REAL,
+            vol_pct_rank  REAL,
+            ma_50d        REAL,
+            ma_slope      REAL,
+            classified_at {ts},
+            UNIQUE(ticker, as_of)
+        )""")
+        cur.execute(
+            "CREATE INDEX IF NOT EXISTS idx_regimes_ticker ON ticker_regimes(ticker)"
+        )
+        cur.execute(f"""
+        CREATE TABLE IF NOT EXISTS signal_divergences (
+            id                {pk},
+            ticker            TEXT NOT NULL,
+            as_of             TEXT NOT NULL,
+            signal_trend      INTEGER NOT NULL,
+            signal_sentiment  INTEGER NOT NULL,
+            signal_technical  INTEGER NOT NULL,
+            delta_ts          INTEGER NOT NULL,
+            delta_tt          INTEGER NOT NULL,
+            delta_st          INTEGER NOT NULL,
+            variance          REAL NOT NULL,
+            score             REAL NOT NULL,
+            severity          TEXT NOT NULL,
+            regime            TEXT,
+            trend_raw         TEXT,
+            sentiment_raw     TEXT,
+            rsi               REAL,
+            macd_status       TEXT,
+            computed_at       {ts},
+            UNIQUE(ticker, as_of)
+        )""")
+        cur.execute(
+            "CREATE INDEX IF NOT EXISTS idx_diverg_ticker ON signal_divergences(ticker)"
+        )
+        cur.execute(
+            "CREATE INDEX IF NOT EXISTS idx_diverg_score  ON signal_divergences(score DESC)"
+        )
+        cur.execute(f"""
+        CREATE TABLE IF NOT EXISTS anomalies (
+            id              {pk},
+            ticker          TEXT NOT NULL,
+            event_type      TEXT NOT NULL,
+            magnitude_sigma REAL NOT NULL,
+            severity        TEXT NOT NULL,
+            details         TEXT,
+            detected_at     {ts}
+        )""")
+        cur.execute(
+            "CREATE INDEX IF NOT EXISTS idx_anomaly_ticker "
+            "ON anomalies(ticker, event_type)"
+        )
+        cur.execute(
+            "CREATE INDEX IF NOT EXISTS idx_anomaly_time "
+            "ON anomalies(detected_at DESC)"
+        )
+
         conn.commit()
+
+
+
         backend = "PostgreSQL" if _use_postgres else f"SQLite ({_SQLITE_PATH})"
         print(f"✅ Database initialized ({backend})")
     except Exception as e:
